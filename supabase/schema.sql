@@ -13,3 +13,7 @@ create table reservas (
 );
 
 alter table reservas enable row level security;
+
+-- Permisos para la clave service_role (la que usa la web en el servidor)
+grant usage on schema public to service_role;
+grant select, insert, update, delete on public.reservas to service_role;
