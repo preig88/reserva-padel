@@ -170,7 +170,7 @@ export default function TabReservar({ perfil, activa }) {
 
       {hoja?.tipo === 'ok' && (
         <Hoja cerrar={() => setHoja(null)}>
-          <h2>¡Reserva confirmada!</h2>
+          <h2 className="confirmada">¡Reserva confirmada!</h2>
           <Horario fecha={fecha} ini={hoja.inicio} fin={finReserva(hoja.inicio, duracion)} />
           <p className="resumen">Puedes verla o anularla en «Mis reservas».</p>
           <button className="boton" onClick={() => setHoja(null)}>Cerrar</button>

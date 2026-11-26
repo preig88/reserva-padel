@@ -7,6 +7,7 @@ import Auth, { NuevaContrasena } from './Auth';
 import TabReservar from './TabReservar';
 import TabMis from './TabMis';
 import TabPerfil from './TabPerfil';
+import TabAdmin from './TabAdmin';
 
 const PESTANAS = [
   ['reservar', 'Reservar'],
@@ -93,8 +94,8 @@ export default function App() {
   } else {
     cuerpo = (
       <>
-        <nav className="pestanas">
-          {PESTANAS.map(([id, texto]) => (
+        <nav className={`pestanas${perfil.esAdmin ? ' cuatro' : ''}`}>
+          {(perfil.esAdmin ? [...PESTANAS, ['admin', 'Admin']] : PESTANAS).map(([id, texto]) => (
             <button
               key={id}
               className={`pestana${pestana === id ? ' activa' : ''}`}
@@ -106,6 +107,7 @@ export default function App() {
         </nav>
         <TabReservar perfil={perfil} activa={pestana === 'reservar'} />
         {pestana === 'mis' && <TabMis />}
+        {pestana === 'admin' && perfil.esAdmin && <TabAdmin />}
         {pestana === 'perfil' && (
           <TabPerfil perfil={perfil} error={errorPerfil} instalar={instalar} alInstalar={pedirInstalar} />
         )}

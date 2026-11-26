@@ -265,3 +265,21 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .cifra { background: var(--blanco); border-radius: 12px; padding: 14px 8px; text-align: center; }
 .cifra b { display: block; font-size: 26px; font-weight: 700; }
 .cifra span { display: block; margin-top: 4px; font-size: 12.5px; color: var(--suave); line-height: 1.3; }
+
+/* Reserva confirmada */
+.hoja h2.confirmada { color: #1b7a3d; font-weight: 800; font-size: 24px; }
+
+/* Un solo contador */
+.cifras.una { grid-template-columns: 1fr; }
+.cifras.una .cifra b { font-size: 40px; }
+.cifras.una .cifra span { font-size: 15px; }
+
+/* Pestaña de administrador */
+.pestanas.cuatro .pestana { font-size: 15px; padding-left: 2px; padding-right: 2px; }
+.casa-titulo { display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.casa-cuenta { font-size: 13px; font-weight: 600; color: var(--suave); background: var(--fondo); padding: 3px 8px; border-radius: 999px; }
+.vecino { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-top: 1px solid #edf0f1; }
+.vecino-datos { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vecino-datos b { font-size: 16px; }
+.vecino-datos span { font-size: 13.5px; color: var(--suave); overflow-wrap: anywhere; }
+.boton.pequeno { width: auto; height: 38px; margin-top: 0; padding: 0 12px; font-size: 14px; flex: 0 0 auto; }
