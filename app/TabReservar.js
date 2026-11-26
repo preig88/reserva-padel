@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, ahoraMadrid, hhmm, sumarDias,
+  APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, ahoraMadrid, finReserva, hhmm, sumarDias,
 } from '@/lib/fechas';
 import { MESES, SEMANA, textoFecha, trozos } from '@/lib/formato';
 import { api } from '@/lib/cliente';
-import { Hoja } from './componentes';
+import { Hoja, Horario } from './componentes';
 
-// Horas de inicio posibles: 9:00, 9:30 ... 22:00
+// Horas de inicio posibles: 8:00, 8:30 ... 21:30
 const INICIOS = [];
 for (let m = APERTURA; m <= ULTIMO_INICIO; m += 30) INICIOS.push(m);
 
@@ -149,9 +149,7 @@ export default function TabReservar({ perfil, activa }) {
       {hoja?.tipo === 'info' && (
         <Hoja cerrar={() => setHoja(null)}>
           <h2>Hora reservada</h2>
-          <p className="resumen">
-            {textoFecha(fecha)} · {hhmm(hoja.reserva.ini)}–{hhmm(hoja.reserva.fin)}
-          </p>
+          <Horario fecha={fecha} ini={hoja.reserva.ini} fin={hoja.reserva.fin} />
           <p className="quien">Calle {hoja.reserva.calle}, nº {hoja.reserva.numero}</p>
           {hoja.reserva.propia && <p className="resumen">Es de tu casa.</p>}
           <button className="boton claro" onClick={() => setHoja(null)}>Cerrar</button>
@@ -173,9 +171,7 @@ export default function TabReservar({ perfil, activa }) {
       {hoja?.tipo === 'ok' && (
         <Hoja cerrar={() => setHoja(null)}>
           <h2>¡Reserva confirmada!</h2>
-          <p className="resumen">
-            {textoFecha(fecha)} · {hhmm(hoja.inicio)}–{hhmm(hoja.inicio + duracion)}
-          </p>
+          <Horario fecha={fecha} ini={hoja.inicio} fin={finReserva(hoja.inicio, duracion)} />
           <p className="resumen">Puedes verla o anularla en «Mis reservas».</p>
           <button className="boton" onClick={() => setHoja(null)}>Cerrar</button>
         </Hoja>
@@ -207,9 +203,7 @@ function Confirmar({ perfil, fecha, inicio, duracion, cerrar, hecho, conflicto }
   return (
     <Hoja cerrar={cerrar}>
       <h2>Reservar pista</h2>
-      <p className="resumen">
-        {textoFecha(fecha)} · {hhmm(inicio)}–{hhmm(inicio + duracion)} ({duracion} min)
-      </p>
+      <Horario fecha={fecha} ini={inicio} fin={finReserva(inicio, duracion)} />
       <p className="resumen">Se reserva para tu casa: calle {perfil.calle}, nº {perfil.numero}.</p>
       {error && <p className="fila-error">{error}</p>}
       <button className="boton" onClick={reservar} disabled={enviando}>

@@ -1,5 +1,5 @@
 import {
-  APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
+  APERTURA, ULTIMO_INICIO, DURACIONES, finReserva, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
   ahoraMadrid, esFecha, lunesDe, madridAUtc, sumarDias,
 } from '@/lib/fechas';
 import { ErrorApi, json, manejar, sesion } from '@/lib/servidor';
@@ -92,7 +92,7 @@ export const POST = manejar(async (req) => {
     calle: perfil.calle,
     numero: perfil.numero,
     inicio: madridAUtc(b.fecha, ini).toISOString(),
-    fin: madridAUtc(b.fecha, ini + duracion).toISOString(),
+    fin: madridAUtc(b.fecha, finReserva(ini, duracion)).toISOString(),
   });
   if (error) {
     if (error.code === '23P01') {

@@ -1,10 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { hhmm } from '@/lib/fechas';
-import { textoFecha } from '@/lib/formato';
 import { api } from '@/lib/cliente';
-import { Hoja } from './componentes';
+import { Hoja, Horario } from './componentes';
 
 export default function TabMis() {
   const [lista, setLista] = useState(null);
@@ -31,10 +29,7 @@ export default function TabMis() {
 
       {lista?.map((r) => (
         <div className="tarjeta reserva" key={r.id}>
-          <div>
-            <div className="reserva-dia">{textoFecha(r.fecha)}</div>
-            <div className="reserva-hora">{hhmm(r.ini)}–{hhmm(r.ini + r.duracion)} · {r.duracion} min</div>
-          </div>
+          <Horario fecha={r.fecha} ini={r.ini} fin={r.ini + r.duracion} pequeno />
           <button className="boton rojo" onClick={() => setAnular(r)}>Anular reserva</button>
         </div>
       ))}
@@ -70,9 +65,7 @@ function ConfirmarAnular({ reserva, cerrar, hecho }) {
   return (
     <Hoja cerrar={cerrar}>
       <h2>¿Anular esta reserva?</h2>
-      <p className="resumen">
-        {textoFecha(reserva.fecha)} · {hhmm(reserva.ini)}–{hhmm(reserva.ini + reserva.duracion)}
-      </p>
+      <Horario fecha={reserva.fecha} ini={reserva.ini} fin={reserva.ini + reserva.duracion} />
       <p className="resumen">La hora quedará libre para otros vecinos.</p>
       {error && <p className="fila-error">{error}</p>}
       <button className="boton rojo" onClick={anular} disabled={enviando}>
