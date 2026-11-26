@@ -8,6 +8,7 @@ import { Hoja } from './componentes';
 export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
   const [confirmar, setConfirmar] = useState(false);
   const [modoApp, setModoApp] = useState(null); // 'instalada' | 'ios' | 'otro'
+  const [avisoCompartir, setAvisoCompartir] = useState('');
 
   useEffect(() => {
     const standalone =
@@ -17,6 +18,29 @@ export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setModoApp(standalone ? 'instalada' : ios ? 'ios' : 'otro');
   }, []);
+
+  // Abre el menú de compartir del móvil (WhatsApp, etc.); si no existe, copia el enlace
+  async function compartir() {
+    setAvisoCompartir('');
+    const url = window.location.origin;
+    const texto =
+      'Reserva la pista de pádel de Tikal III y IV desde esta app. ' +
+      'Para crear tu cuenta necesitarás la contraseña de la urbanización.';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Pádel Tikal III y IV', text: texto, url });
+        return;
+      } catch (e) {
+        if (e?.name === 'AbortError') return; // el usuario cerró el menú
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${texto} ${url}`);
+      setAvisoCompartir('Enlace copiado. Pégalo en WhatsApp o donde quieras.');
+    } catch {
+      setAvisoCompartir(`Copia este enlace: ${url}`);
+    }
+  }
 
   const salir = () => supabaseCliente().auth.signOut();
 
@@ -33,18 +57,20 @@ export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
             <Dato etiqueta="Número" valor={perfil.numero} />
           </div>
 
-          <h2 className="titulo-seccion">Tus números</h2>
-          <div className="cifras">
-            <Cifra n={perfil.estadisticas.mias} texto="reservas hechas por ti" />
-            <Cifra n={perfil.estadisticas.casa} texto="reservas hechas por tu casa" />
-            <Cifra
-              n={`${perfil.estadisticas.quedan}/${perfil.estadisticas.maximo}`}
-              texto="te quedan esta semana"
-            />
+          <h2 className="titulo-seccion">Reservas</h2>
+          <div className="cifras una">
+            <Cifra n={perfil.reservasCasa} texto="reservas hechas por tu casa" />
           </div>
-          <p className="ayuda">Las reservas anuladas no cuentan. La semana va de lunes a domingo.</p>
+          <p className="ayuda">Cuentan las reservas de tu casa, sumando sus dos cuentas. Las anuladas no cuentan.</p>
         </>
       )}
+
+      <h2 className="titulo-seccion">Compartir la app</h2>
+      <div className="tarjeta">
+        <p className="ayuda sin-margen">Envía el enlace a tus vecinos para que se registren.</p>
+        <button className="boton" style={{ marginTop: 14 }} onClick={compartir}>Compartir la app</button>
+        {avisoCompartir && <p className="fila-ok">{avisoCompartir}</p>}
+      </div>
 
       <h2 className="titulo-seccion">Instalar la app</h2>
       <div className="tarjeta">
