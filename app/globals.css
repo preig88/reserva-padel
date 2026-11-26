@@ -70,7 +70,6 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
   font-weight: 600;
 }
 .dia .mes { margin-top: 8px; font-size: 13.5px; font-weight: 500; color: var(--texto); }
-.dia.pasado .sem, .dia.pasado .mes, .dia.pasado .num { color: var(--suave); }
 .dia.sel .num {
   background: var(--marino);
   border-color: var(--marino);
@@ -82,15 +81,17 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 }
 
 /* Duración */
-.duraciones { display: flex; gap: 10px; margin-top: 22px; }
+.duraciones { display: flex; gap: 8px; margin-top: 22px; }
 .duracion {
-  flex: 0 0 102px;
+  flex: 1 1 0;
+  min-width: 0;
   height: 32px;
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: 3px;
   font-size: 15px;
   font-weight: 600;
+  padding: 0;
 }
 .duracion.sel { background: var(--marino); border-color: var(--marino); color: #fff; }
 

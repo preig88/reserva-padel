@@ -30,8 +30,9 @@ export default function TabReservar({ perfil, activa, alReservar }) {
   }, []);
 
   const hoy = ahora?.fecha;
+  // Día elegido: hoy al empezar, y si la app sigue abierta pasada la medianoche, pasa a hoy
   useEffect(() => {
-    if (hoy && !fecha) setFecha(hoy);
+    if (hoy && (!fecha || fecha < hoy)) setFecha(hoy);
   }, [hoy, fecha]);
 
   const cargar = useCallback(async () => {
@@ -73,9 +74,9 @@ export default function TabReservar({ perfil, activa, alReservar }) {
 
   if (!hoy || !fecha) return null;
 
-  // Semana pasada y las dos semanas siguientes
+  // Hoy y las dos semanas siguientes
   const dias = [];
-  for (let i = -7; i <= MAX_DIAS_ADELANTE; i++) dias.push(sumarDias(hoy, i));
+  for (let i = 0; i <= MAX_DIAS_ADELANTE; i++) dias.push(sumarDias(hoy, i));
 
   function estado(inicio) {
     const pasada = fecha < hoy || (fecha === hoy && inicio <= ahora.minutos);
@@ -98,7 +99,7 @@ export default function TabReservar({ perfil, activa, alReservar }) {
             <button
               key={f}
               data-sel={sel ? '1' : '0'}
-              className={`dia${sel ? ' sel' : ''}${f < hoy ? ' pasado' : ''}`}
+              className={`dia${sel ? ' sel' : ''}`}
               onClick={() => setFecha(f)}
               aria-label={textoFecha(f)}
               aria-pressed={sel}
