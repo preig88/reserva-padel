@@ -1,28 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { api } from '@/lib/cliente';
 import { supabaseCliente } from '@/lib/supabaseCliente';
-import { Hoja } from './componentes';
+import { Hoja, InstalarApp } from './componentes';
 
 export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
   const [confirmar, setConfirmar] = useState(false);
-  const [modoApp, setModoApp] = useState(null); // 'instalada' | 'ios' | 'otro'
   const [avisoCompartir, setAvisoCompartir] = useState('');
-
-  useEffect(() => {
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const ios =
-      /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    setModoApp(standalone ? 'instalada' : ios ? 'ios' : 'otro');
-  }, []);
 
   // Abre el menú de compartir del móvil (WhatsApp, etc.); si no existe, copia el enlace
   async function compartir() {
     setAvisoCompartir('');
-    const url = window.location.origin;
+    // Dirección corta oficial (si se abre desde otra dirección de Vercel, se comparte esta igualmente)
+    const url = window.location.hostname.endsWith('vercel.app')
+      ? 'https://padeltikal.vercel.app'
+      : window.location.origin;
     const texto =
       'Reserva la pista de pádel de Tikal III y IV desde esta app. ' +
       'Para crear tu cuenta necesitarás la contraseña de la urbanización.';
@@ -65,30 +58,14 @@ export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
         </>
       )}
 
+      <h2 className="titulo-seccion">Instalar la app</h2>
+      <InstalarApp instalar={instalar} alInstalar={alInstalar} />
+
       <h2 className="titulo-seccion">Compartir la app</h2>
       <div className="tarjeta">
         <p className="ayuda sin-margen">Envía el enlace a tus vecinos para que se registren.</p>
         <button className="boton" style={{ marginTop: 14 }} onClick={compartir}>Compartir la app</button>
         {avisoCompartir && <p className="fila-ok">{avisoCompartir}</p>}
-      </div>
-
-      <h2 className="titulo-seccion">Instalar la app</h2>
-      <div className="tarjeta">
-        {modoApp === 'instalada' && <p className="ayuda sin-margen">La app ya está instalada en este dispositivo.</p>}
-        {modoApp !== 'instalada' && instalar && (
-          <button className="boton" onClick={alInstalar}>Instalar app</button>
-        )}
-        {modoApp === 'ios' && !instalar && (
-          <p className="ayuda sin-margen">
-            En iPhone o iPad: pulsa <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>.
-          </p>
-        )}
-        {modoApp === 'otro' && !instalar && (
-          <p className="ayuda sin-margen">
-            Abre el menú del navegador (⋮ o ⋯) y elige <b>Instalar aplicación</b> o{' '}
-            <b>Añadir a pantalla de inicio</b>.
-          </p>
-        )}
       </div>
 
       <button className="boton claro grande" onClick={salir}>Cerrar sesión</button>

@@ -1,30 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { api } from '@/lib/cliente';
 import { Hoja, Horario } from './componentes';
 
-export default function TabMis() {
-  const [lista, setLista] = useState(null);
-  const [error, setError] = useState('');
+// La lista se carga en App en cuanto inicias sesión, para que aparezca al instante
+export default function TabMis({ lista, error, recargar, quitar }) {
   const [anular, setAnular] = useState(null);
-
-  const cargar = useCallback(async () => {
-    try {
-      const j = await api('/api/mis-reservas');
-      setLista(j.reservas);
-      setError('');
-    } catch (e) {
-      setError(e.message);
-    }
-  }, []);
-
-  useEffect(() => { cargar(); }, [cargar]);
 
   return (
     <main className="contenido">
       <h2 className="titulo-seccion">Reservas de tu casa</h2>
       {error && <p className="aviso error">{error}</p>}
+      {!lista && !error && <p className="vacio">Cargando…</p>}
       {lista && lista.length === 0 && <p className="vacio">Todavía no tienes reservas.</p>}
 
       {lista?.map((r) => (
@@ -38,7 +26,7 @@ export default function TabMis() {
         <ConfirmarAnular
           reserva={anular}
           cerrar={() => setAnular(null)}
-          hecho={() => { setAnular(null); cargar(); }}
+          hecho={() => { quitar(anular.id); setAnular(null); recargar(); }}
         />
       )}
     </main>

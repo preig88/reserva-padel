@@ -12,7 +12,7 @@ import { Hoja, Horario } from './componentes';
 const INICIOS = [];
 for (let m = APERTURA; m <= ULTIMO_INICIO; m += 30) INICIOS.push(m);
 
-export default function TabReservar({ perfil, activa }) {
+export default function TabReservar({ perfil, activa, alReservar }) {
   const [ahora, setAhora] = useState(null);
   const [fecha, setFecha] = useState(null);
   const [duracion, setDuracion] = useState(90);
@@ -163,7 +163,7 @@ export default function TabReservar({ perfil, activa }) {
           inicio={hoja.inicio}
           duracion={duracion}
           cerrar={() => setHoja(null)}
-          hecho={() => { setHoja({ tipo: 'ok', inicio: hoja.inicio }); cargar(); }}
+          hecho={() => { setHoja({ tipo: 'ok', inicio: hoja.inicio }); cargar(); alReservar?.(); }}
           conflicto={cargar}
         />
       )}
@@ -206,7 +206,7 @@ function Confirmar({ perfil, fecha, inicio, duracion, cerrar, hecho, conflicto }
       <Horario fecha={fecha} ini={inicio} fin={finReserva(inicio, duracion)} />
       <p className="resumen">Se reserva para tu casa: calle {perfil.calle}, nº {perfil.numero}.</p>
       {error && <p className="fila-error">{error}</p>}
-      <button className="boton" onClick={reservar} disabled={enviando}>
+      <button className="boton verde" onClick={reservar} disabled={enviando}>
         {enviando ? 'Reservando…' : 'Confirmar reserva'}
       </button>
       <button className="boton claro" onClick={cerrar}>Cancelar</button>
