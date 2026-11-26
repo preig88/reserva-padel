@@ -1,5 +1,5 @@
 import {
-  APERTURA, CIERRE, DURACIONES, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
+  APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
   ahoraMadrid, esFecha, lunesDe, madridAUtc, sumarDias,
 } from '@/lib/fechas';
 import { ErrorApi, json, manejar, sesion } from '@/lib/servidor';
@@ -31,13 +31,20 @@ export const GET = manejar(async (req) => {
   if (error) throw error;
 
   return json({
-    reservas: data.map((r) => ({
-      ini: minutosDelDia(r.inicio),
-      fin: minutosDelDia(r.fin),
+    reservas: data.map((r) => {
+      // minutos desde las 0:00 del día pedido (negativo si empezó el día anterior)
+      const ini = r.inicio < desde
+        ? Math.round((Date.parse(r.inicio) - Date.parse(desde)) / 60000)
+        : minutosDelDia(r.inicio);
+      const fin = ini + Math.round((Date.parse(r.fin) - Date.parse(r.inicio)) / 60000);
+      return {
+      ini,
+      fin,
       calle: r.calle,
       numero: r.numero,
       propia: r.calle === perfil.calle && r.numero === perfil.numero,
-    })),
+      };
+    }),
   });
 });
 
@@ -50,7 +57,7 @@ export const POST = manejar(async (req) => {
 
   if (!esFecha(String(b.fecha || ''))) throw new ErrorApi(400, 'Fecha no válida');
   if (!DURACIONES.includes(duracion)) throw new ErrorApi(400, 'Duración no válida');
-  if (!Number.isInteger(ini) || ini % 30 !== 0 || ini < APERTURA || ini + duracion > CIERRE) {
+  if (!Number.isInteger(ini) || ini % 30 !== 0 || ini < APERTURA || ini > ULTIMO_INICIO) {
     throw new ErrorApi(400, 'Esa hora no está disponible');
   }
 

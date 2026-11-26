@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  APERTURA, CIERRE, DURACIONES, MAX_DIAS_ADELANTE, ahoraMadrid, hhmm, sumarDias,
+  APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, ahoraMadrid, hhmm, sumarDias,
 } from '@/lib/fechas';
 import { MESES, SEMANA, textoFecha, trozos } from '@/lib/formato';
 import { api } from '@/lib/cliente';
 import { Hoja } from './componentes';
 
-// Horas de inicio posibles: 9:00, 9:30 ... 21:30
+// Horas de inicio posibles: 9:00, 9:30 ... 22:00
 const INICIOS = [];
-for (let m = APERTURA; m < CIERRE; m += 30) INICIOS.push(m);
+for (let m = APERTURA; m <= ULTIMO_INICIO; m += 30) INICIOS.push(m);
 
 export default function TabReservar({ perfil, activa }) {
   const [ahora, setAhora] = useState(null);
@@ -79,9 +79,8 @@ export default function TabReservar({ perfil, activa }) {
 
   function estado(inicio) {
     const pasada = fecha < hoy || (fecha === hoy && inicio <= ahora.minutos);
-    const fuera = inicio + duracion > CIERRE;
     const reserva = reservas.find((r) => inicio < r.fin && inicio + duracion > r.ini);
-    return { pasada, fuera, reserva };
+    return { pasada, reserva };
   }
 
   function pulsar(inicio) {
@@ -126,7 +125,7 @@ export default function TabReservar({ perfil, activa }) {
 
       <div className="horas">
         {INICIOS.map((inicio) => {
-          const { pasada, fuera, reserva } = estado(inicio);
+          const { pasada, reserva } = estado(inicio);
           if (reserva) {
             return (
               <button key={inicio} className="hora ocupada" onClick={() => pulsar(inicio)}>
@@ -135,7 +134,7 @@ export default function TabReservar({ perfil, activa }) {
             );
           }
           return (
-            <button key={inicio} className="hora" disabled={pasada || fuera} onClick={() => pulsar(inicio)}>
+            <button key={inicio} className="hora" disabled={pasada} onClick={() => pulsar(inicio)}>
               {hhmm(inicio)}
             </button>
           );
@@ -144,7 +143,7 @@ export default function TabReservar({ perfil, activa }) {
 
       {errorCarga && <p className="aviso error">{errorCarga}</p>}
       <p className="aviso">
-        Las horas tachadas no están disponibles. Pulsa una tachada reservada para ver qué casa la tiene.
+        Las horas tachadas ya están reservadas: púlsalas para ver qué casa las tiene. Las horas en gris claro ya han pasado.
       </p>
 
       {hoja?.tipo === 'info' && (

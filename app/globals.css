@@ -112,14 +112,20 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
   letter-spacing: -0.2px;
 }
 .hora.sel { background: var(--marino); border-color: var(--marino); color: #fff; }
-.hora.ocupada, .hora:disabled {
+.hora.ocupada {
   color: var(--tachado);
   text-decoration: line-through;
   border-color: #e4e8ea;
   background: var(--blanco);
   font-weight: 500;
 }
-.hora:disabled { cursor: default; }
+.hora:disabled {
+  color: #c3cace;
+  border-color: #e9edef;
+  background: #f7f8f9;
+  font-weight: 500;
+  cursor: default;
+}
 
 .aviso { margin-top: 24px; color: var(--suave); font-size: 14px; line-height: 1.4; }
 .error { color: #b3261e; }
