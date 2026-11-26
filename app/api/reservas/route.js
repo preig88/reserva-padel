@@ -1,11 +1,10 @@
-import { supabase } from '@/lib/supabase';
 import {
-  APERTURA, CIERRE, DURACIONES, TZ, ahoraMadrid, esFecha, madridAUtc, sumarDias,
+  APERTURA, CIERRE, DURACIONES, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
+  ahoraMadrid, esFecha, lunesDe, madridAUtc, sumarDias,
 } from '@/lib/fechas';
+import { ErrorApi, json, manejar, sesion } from '@/lib/servidor';
 
 export const dynamic = 'force-dynamic';
-
-const CALLES = ['Jumilla', 'San Javier'];
 
 function minutosDelDia(iso) {
   const f = new Intl.DateTimeFormat('en-GB', {
@@ -15,77 +14,85 @@ function minutosDelDia(iso) {
   return h * 60 + m;
 }
 
-const json = (data, status = 200) => Response.json(data, { status });
-
-// Reservas de un día
-export async function GET(req) {
+// Reservas de un día. Nunca se envía el nombre: solo calle y número.
+export const GET = manejar(async (req) => {
+  const { db, perfil } = await sesion(req);
   const fecha = new URL(req.url).searchParams.get('fecha');
-  if (!esFecha(fecha || '')) return json({ error: 'Fecha no válida' }, 400);
-  try {
-    const desde = madridAUtc(fecha, 0).toISOString();
-    const hasta = madridAUtc(sumarDias(fecha, 1), 0).toISOString();
-    const { data, error } = await supabase()
-      .from('reservas')
-      .select('inicio, fin, calle, numero, nombre')
-      .lt('inicio', hasta)
-      .gt('fin', desde)
-      .order('inicio');
-    if (error) throw error;
-    const reservas = data.map((r) => ({
+  if (!esFecha(fecha || '')) throw new ErrorApi(400, 'Fecha no válida');
+
+  const desde = madridAUtc(fecha, 0).toISOString();
+  const hasta = madridAUtc(sumarDias(fecha, 1), 0).toISOString();
+  const { data, error } = await db
+    .from('reservas')
+    .select('inicio, fin, calle, numero')
+    .lt('inicio', hasta)
+    .gt('fin', desde)
+    .order('inicio');
+  if (error) throw error;
+
+  return json({
+    reservas: data.map((r) => ({
       ini: minutosDelDia(r.inicio),
       fin: minutosDelDia(r.fin),
       calle: r.calle,
       numero: r.numero,
-      nombre: r.nombre,
-    }));
-    return json({ reservas });
-  } catch (e) {
-    console.error(e);
-    return json({ error: 'No se pudo cargar las reservas' }, 500);
-  }
-}
+      propia: r.calle === perfil.calle && r.numero === perfil.numero,
+    })),
+  });
+});
 
-// Crear una reserva
-export async function POST(req) {
-  let b;
-  try { b = await req.json(); } catch { return json({ error: 'Datos no válidos' }, 400); }
-
-  const calle = String(b.calle || '');
-  const numero = String(b.numero || '').trim();
-  const nombre = String(b.nombre || '').trim();
+// Crear una reserva (la casa sale del perfil, no de lo que envíe el móvil)
+export const POST = manejar(async (req) => {
+  const { db, user, perfil } = await sesion(req);
+  const b = await req.json().catch(() => ({}));
   const ini = Number(b.ini);
   const duracion = Number(b.duracion);
 
-  if (!esFecha(String(b.fecha || ''))) return json({ error: 'Fecha no válida' }, 400);
-  if (!CALLES.includes(calle)) return json({ error: 'Elige una calle' }, 400);
-  if (!numero || numero.length > 10) return json({ error: 'Escribe el número de casa' }, 400);
-  if (!nombre || nombre.length > 40) return json({ error: 'Escribe tu nombre' }, 400);
-  if (!DURACIONES.includes(duracion)) return json({ error: 'Duración no válida' }, 400);
+  if (!esFecha(String(b.fecha || ''))) throw new ErrorApi(400, 'Fecha no válida');
+  if (!DURACIONES.includes(duracion)) throw new ErrorApi(400, 'Duración no válida');
   if (!Number.isInteger(ini) || ini % 30 !== 0 || ini < APERTURA || ini + duracion > CIERRE) {
-    return json({ error: 'Esa hora no está disponible' }, 400);
+    throw new ErrorApi(400, 'Esa hora no está disponible');
   }
 
   const ahora = ahoraMadrid();
   if (b.fecha < ahora.fecha || (b.fecha === ahora.fecha && ini <= ahora.minutos)) {
-    return json({ error: 'Esa hora ya ha pasado' }, 400);
+    throw new ErrorApi(400, 'Esa hora ya ha pasado.');
   }
-  if (b.fecha > sumarDias(ahora.fecha, 180)) return json({ error: 'Fecha demasiado lejana' }, 400);
+  if (b.fecha > sumarDias(ahora.fecha, MAX_DIAS_ADELANTE)) {
+    throw new ErrorApi(400, `Solo se puede reservar con un máximo de ${MAX_DIAS_ADELANTE} días de antelación.`);
+  }
 
-  try {
-    const { error } = await supabase().from('reservas').insert({
-      inicio: madridAUtc(b.fecha, ini).toISOString(),
-      fin: madridAUtc(b.fecha, ini + duracion).toISOString(),
-      calle, numero, nombre,
-    });
-    if (error) {
-      if (error.code === '23P01') {
-        return json({ error: 'Alguien acaba de reservar esa hora. Elige otra.' }, 409);
-      }
-      throw error;
+  // Máximo 2 reservas por casa y semana (lunes a domingo)
+  const limite = new ErrorApi(
+    409,
+    `Tu casa ya tiene ${MAX_RESERVAS_SEMANA} reservas esa semana (de lunes a domingo), que es el máximo. ` +
+      'Anula una desde «Mis reservas» o elige otra semana.',
+    'LIMITE_SEMANAL',
+  );
+  const lunes = lunesDe(b.fecha);
+  const { count, error: eCuenta } = await db
+    .from('reservas')
+    .select('id', { count: 'exact', head: true })
+    .eq('calle', perfil.calle)
+    .eq('numero', perfil.numero)
+    .gte('inicio', madridAUtc(lunes, 0).toISOString())
+    .lt('inicio', madridAUtc(sumarDias(lunes, 7), 0).toISOString());
+  if (eCuenta) throw eCuenta;
+  if (count >= MAX_RESERVAS_SEMANA) throw limite;
+
+  const { error } = await db.from('reservas').insert({
+    usuario_id: user.id,
+    calle: perfil.calle,
+    numero: perfil.numero,
+    inicio: madridAUtc(b.fecha, ini).toISOString(),
+    fin: madridAUtc(b.fecha, ini + duracion).toISOString(),
+  });
+  if (error) {
+    if (error.code === '23P01') {
+      throw new ErrorApi(409, 'Alguien acaba de reservar esa hora. Elige otra.', 'OCUPADA');
     }
-    return json({ ok: true }, 201);
-  } catch (e) {
-    console.error(e);
-    return json({ error: 'No se pudo guardar la reserva' }, 500);
+    if (/LIMITE_SEMANAL/.test(error.message)) throw limite;
+    throw error;
   }
-}
+  return json({ ok: true }, 201);
+});

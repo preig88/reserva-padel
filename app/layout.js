@@ -3,6 +3,8 @@ import './globals.css';
 export const metadata = {
   title: 'Pádel Tikal III y IV',
   description: 'Reserva de la pista de pádel de la urbanización',
+  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: 'Pádel Tikal', statusBarStyle: 'default' },
 };
 
 export const viewport = {
