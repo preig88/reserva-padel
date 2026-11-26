@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { MAX_CUENTAS_CASA } from '@/lib/casas';
 import { api } from '@/lib/cliente';
 import { Hoja } from './componentes';
 
@@ -36,7 +37,7 @@ export default function TabAdmin() {
         <div className="tarjeta casa" key={`${c.calle}-${c.numero}`}>
           <div className="casa-titulo">
             Calle {c.calle}, nº {c.numero}
-            <span className="casa-cuenta">{c.vecinos.length}/2</span>
+            <span className="casa-cuenta">{c.vecinos.length}/{MAX_CUENTAS_CASA}</span>
           </div>
           {c.vecinos.map((v) => (
             <div className="vecino" key={v.id}>

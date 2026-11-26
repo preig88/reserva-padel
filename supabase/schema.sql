@@ -35,12 +35,12 @@ create table perfiles (
   check (casa_valida(calle, numero))
 );
 
--- Máximo 2 cuentas por casa
+-- Máximo 3 cuentas por casa
 create function limitar_cuentas_por_casa() returns trigger
 language plpgsql as $$
 begin
   perform pg_advisory_xact_lock(hashtext('cuentas:' || new.calle || ':' || new.numero));
-  if (select count(*) from perfiles where calle = new.calle and numero = new.numero) >= 2 then
+  if (select count(*) from perfiles where calle = new.calle and numero = new.numero) >= 3 then
     raise exception 'CASA_LLENA';
   end if;
   return new;
@@ -67,19 +67,20 @@ create table reservas (
 
 create index reservas_casa_idx on reservas (calle, numero, inicio);
 
--- Máximo 2 reservas por casa y semana (lunes a domingo, hora de Madrid)
+-- Máximo 4 h 30 min (270 minutos) reservados por casa y semana (lunes a domingo, hora de Madrid)
 create function limitar_reservas_por_semana() returns trigger
 language plpgsql as $$
-declare usadas int;
+declare usados numeric; nuevos numeric;
 begin
   perform pg_advisory_xact_lock(hashtext('reservas:' || new.calle || ':' || new.numero));
-  select count(*) into usadas
+  select coalesce(sum(extract(epoch from (fin - inicio)) / 60), 0) into usados
     from reservas
    where calle = new.calle
      and numero = new.numero
      and date_trunc('week', inicio at time zone 'Europe/Madrid')
        = date_trunc('week', new.inicio at time zone 'Europe/Madrid');
-  if usadas >= 2 then
+  nuevos := extract(epoch from (new.fin - new.inicio)) / 60;
+  if usados + nuevos > 270 then
     raise exception 'LIMITE_SEMANAL';
   end if;
   return new;

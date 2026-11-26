@@ -54,7 +54,7 @@ export default function TabPerfil({ perfil, error, instalar, alInstalar }) {
           <div className="cifras una">
             <Cifra n={perfil.reservasCasa} texto="reservas hechas por tu casa" />
           </div>
-          <p className="ayuda">Cuentan las reservas de tu casa, sumando sus dos cuentas. Las anuladas no cuentan.</p>
+          <p className="ayuda">Cuentan las reservas de tu casa, sumando las de todas sus cuentas. Las anuladas no cuentan.</p>
         </>
       )}
 
