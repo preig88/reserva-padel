@@ -1,5 +1,5 @@
-import Reservas from './Reservas';
+import App from './App';
 
 export default function Page() {
-  return <Reservas />;
+  return <App />;
 }

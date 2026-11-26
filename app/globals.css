@@ -30,29 +30,17 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #e6e9eb;
 }
 .cabecera h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
 
 .contenido { padding: 16px 15px 40px; }
-
-/* Etiqueta Pádel */
-.etiqueta {
-  display: inline-block;
-  background: var(--marino);
-  color: #fff;
-  font-weight: 700;
-  font-size: 16px;
-  padding: 7px 14px;
-  border-radius: 999px;
-}
 
 /* Tira de días */
 .dias {
   display: flex;
   gap: 0;
   overflow-x: auto;
-  margin: 16px -15px 0;
+  margin: 0 -15px;
   padding: 0 15px 4px;
   scrollbar-width: none;
 }
@@ -184,3 +172,77 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .boton:disabled { opacity: 0.6; }
 .boton.claro { background: var(--fondo); color: var(--texto); margin-top: 10px; }
 .quien { font-size: 18px; font-weight: 700; margin: 6px 0 2px; }
+
+/* Pestañas superiores */
+.pestanas {
+  background: var(--blanco);
+  display: flex;
+  border-bottom: 1px solid #e6e9eb;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.pestana {
+  flex: 1;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 14px 4px 12px;
+  font-size: 17px;
+  font-weight: 400;
+  color: #66737b;
+  white-space: nowrap;
+}
+.pestana.activa { color: var(--texto); font-weight: 700; border-bottom-color: var(--marino); }
+
+/* Tarjetas y formularios */
+.tarjeta {
+  background: var(--blanco);
+  border-radius: 12px;
+  padding: 18px 16px;
+  margin-bottom: 14px;
+}
+.titulo-form { margin: 0 0 4px; font-size: 22px; font-weight: 700; }
+.titulo-seccion { margin: 22px 0 10px; font-size: 18px; font-weight: 700; }
+.tarjeta label { display: block; margin: 14px 0 6px; font-size: 14px; font-weight: 600; }
+.tarjeta input, .tarjeta select {
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--blanco);
+  color: var(--texto);
+}
+.tarjeta select:disabled { background: var(--fondo); color: var(--suave); }
+.ayuda { margin: 8px 0 0; color: var(--suave); font-size: 13.5px; line-height: 1.4; }
+.ayuda.sin-margen { margin: 0; font-size: 15px; color: var(--texto); }
+.fila-error { color: #b3261e; font-size: 14px; margin: 12px 0 0; line-height: 1.4; }
+.fila-ok { color: #1b6e3c; font-size: 14px; margin: 12px 0 0; line-height: 1.4; }
+.enlaces { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; }
+.enlace { background: none; border: 0; padding: 10px; font-size: 15px; font-weight: 600; color: var(--texto); text-decoration: underline; }
+
+/* Botones */
+.boton.rojo { background: #c62828; color: #fff; }
+.boton.rojo-borde { background: var(--blanco); color: #c62828; border: 1.5px solid #c62828; margin-top: 10px; }
+.boton.grande { margin-top: 18px; background: var(--blanco); border: 1px solid var(--borde); }
+.tarjeta .boton { margin-top: 0; }
+.tarjeta form .boton, form.tarjeta .boton { margin-top: 22px; }
+
+/* Mis reservas */
+.reserva { display: flex; flex-direction: column; gap: 14px; }
+.reserva-dia { font-size: 18px; font-weight: 700; text-transform: capitalize; }
+.reserva-hora { margin-top: 2px; font-size: 15px; color: var(--suave); }
+.vacio { margin-top: 28px; text-align: center; color: var(--suave); font-size: 16px; }
+
+/* Perfil */
+.dato { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #edf0f1; font-size: 15px; }
+.dato:last-child { border-bottom: 0; }
+.dato span { color: var(--suave); }
+.dato b { font-weight: 600; text-align: right; word-break: break-all; }
+.cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cifra { background: var(--blanco); border-radius: 12px; padding: 14px 8px; text-align: center; }
+.cifra b { display: block; font-size: 26px; font-weight: 700; }
+.cifra span { display: block; margin-top: 4px; font-size: 12.5px; color: var(--suave); line-height: 1.3; }
