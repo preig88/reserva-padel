@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CALLES, NUMEROS } from '@/lib/casas';
 import { supabaseCliente } from '@/lib/supabaseCliente';
+import { InstalarApp } from './componentes';
 
 function traducir(error) {
   const m = error?.message || '';
@@ -15,7 +16,7 @@ function traducir(error) {
   return 'No se pudo completar. Inténtalo de nuevo.';
 }
 
-export default function Auth() {
+export default function Auth({ instalar, alInstalar }) {
   const [modo, setModo] = useState('entrar'); // entrar | registro | olvido
   const [f, setF] = useState({
     nombre: '', email: '', password: '', calle: '', numero: '', codigo: '',
@@ -147,6 +148,9 @@ export default function Auth() {
           )}
         </div>
       </form>
+
+      <h2 className="titulo-seccion">Instalar la app</h2>
+      <InstalarApp instalar={instalar} alInstalar={alInstalar} />
     </main>
   );
 }

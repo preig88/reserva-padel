@@ -21,6 +21,8 @@ export default function App() {
   const [perfil, setPerfil] = useState(null);
   const [errorPerfil, setErrorPerfil] = useState('');
   const [instalar, setInstalar] = useState(null);
+  const [mis, setMis] = useState(null);
+  const [errorMis, setErrorMis] = useState('');
 
   // Sesión guardada en el móvil
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function App() {
       setEstado((p) => (p === 'recuperar' ? p : data.session ? 'dentro' : 'fuera')));
     const { data } = sb.auth.onAuthStateChange((evento, session) => {
       if (evento === 'PASSWORD_RECOVERY') setEstado('recuperar');
-      else if (evento === 'SIGNED_OUT') { setEstado('fuera'); setPerfil(null); setPestana('reservar'); }
+      else if (evento === 'SIGNED_OUT') { setEstado('fuera'); setPerfil(null); setMis(null); setPestana('reservar'); }
       else if (evento === 'SIGNED_IN') setEstado((p) => (p === 'recuperar' ? p : 'dentro'));
     });
     return () => data.subscription.unsubscribe();
@@ -63,9 +65,23 @@ export default function App() {
     }
   }, []);
 
+  // Mis reservas se carga nada más entrar (y se refresca al abrir la pestaña)
+  const cargarMis = useCallback(async () => {
+    try {
+      setMis((await api('/api/mis-reservas')).reservas);
+      setErrorMis('');
+    } catch (e) {
+      setErrorMis(e.message);
+    }
+  }, []);
+
   useEffect(() => {
     if (estado === 'dentro' && (pestana === 'perfil' || !perfil)) cargarPerfil();
   }, [estado, pestana, perfil, cargarPerfil]);
+
+  useEffect(() => {
+    if (estado === 'dentro') cargarMis();
+  }, [estado, pestana, cargarMis]);
 
   async function pedirInstalar() {
     if (!instalar) return;
@@ -78,7 +94,7 @@ export default function App() {
   if (estado === 'cargando') cuerpo = null;
   else if (estado === 'sinconfig') {
     cuerpo = <main className="contenido"><p className="aviso error">La web todavía no está configurada.</p></main>;
-  } else if (estado === 'fuera') cuerpo = <Auth />;
+  } else if (estado === 'fuera') cuerpo = <Auth instalar={instalar} alInstalar={pedirInstalar} />;
   else if (estado === 'recuperar') cuerpo = <NuevaContrasena terminado={() => setEstado('dentro')} />;
   else if (!perfil) {
     cuerpo = (
@@ -105,8 +121,15 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <TabReservar perfil={perfil} activa={pestana === 'reservar'} />
-        {pestana === 'mis' && <TabMis />}
+        <TabReservar perfil={perfil} activa={pestana === 'reservar'} alReservar={cargarMis} />
+        {pestana === 'mis' && (
+          <TabMis
+            lista={mis}
+            error={errorMis}
+            recargar={cargarMis}
+            quitar={(id) => setMis((l) => (l ? l.filter((r) => r.id !== id) : l))}
+          />
+        )}
         {pestana === 'admin' && perfil.esAdmin && <TabAdmin />}
         {pestana === 'perfil' && (
           <TabPerfil perfil={perfil} error={errorPerfil} instalar={instalar} alInstalar={pedirInstalar} />

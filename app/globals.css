@@ -283,3 +283,5 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .vecino-datos b { font-size: 16px; }
 .vecino-datos span { font-size: 13.5px; color: var(--suave); overflow-wrap: anywhere; }
 .boton.pequeno { width: auto; height: 38px; margin-top: 0; padding: 0 12px; font-size: 14px; flex: 0 0 auto; }
+
+.boton.verde { background: #1b7a3d; color: #fff; }
