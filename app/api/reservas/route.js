@@ -1,5 +1,5 @@
 import {
-  APERTURA, ULTIMO_INICIO, DURACIONES, finReserva, MAX_DIAS_ADELANTE, MAX_RESERVAS_SEMANA, TZ,
+  APERTURA, ULTIMO_INICIO, DURACIONES, finReserva, MAX_DIAS_ADELANTE, MAX_MINUTOS_SEMANA, TZ, textoDuracion,
   ahoraMadrid, esFecha, lunesDe, madridAUtc, sumarDias,
 } from '@/lib/fechas';
 import { ErrorApi, json, manejar, sesion } from '@/lib/servidor';
@@ -69,23 +69,26 @@ export const POST = manejar(async (req) => {
     throw new ErrorApi(400, `Solo se puede reservar con un máximo de ${MAX_DIAS_ADELANTE} días de antelación.`);
   }
 
-  // Máximo 2 reservas por casa y semana (lunes a domingo)
-  const limite = new ErrorApi(
-    409,
-    `Tu casa ya tiene ${MAX_RESERVAS_SEMANA} reservas esa semana (de lunes a domingo), que es el máximo. ` +
-      'Anula una desde «Mis reservas» o elige otra semana.',
-    'LIMITE_SEMANAL',
-  );
+  // Máximo de tiempo reservado por casa y semana (lunes a domingo)
+  const limite = (usados) =>
+    new ErrorApi(
+      409,
+      `Tu casa puede reservar como máximo ${textoDuracion(MAX_MINUTOS_SEMANA)} por semana (de lunes a domingo). ` +
+        `Esa semana ya lleva ${textoDuracion(usados)} y le quedan ${textoDuracion(Math.max(0, MAX_MINUTOS_SEMANA - usados))}. ` +
+        'Elige una duración menor, otra semana o anula alguna reserva desde «Mis reservas».',
+      'LIMITE_SEMANAL',
+    );
   const lunes = lunesDe(b.fecha);
-  const { count, error: eCuenta } = await db
+  const { data: semana, error: eSemana } = await db
     .from('reservas')
-    .select('id', { count: 'exact', head: true })
+    .select('inicio, fin')
     .eq('calle', perfil.calle)
     .eq('numero', perfil.numero)
     .gte('inicio', madridAUtc(lunes, 0).toISOString())
     .lt('inicio', madridAUtc(sumarDias(lunes, 7), 0).toISOString());
-  if (eCuenta) throw eCuenta;
-  if (count >= MAX_RESERVAS_SEMANA) throw limite;
+  if (eSemana) throw eSemana;
+  const usados = semana.reduce((t, r) => t + Math.round((Date.parse(r.fin) - Date.parse(r.inicio)) / 60000), 0);
+  if (usados + (finReserva(ini, duracion) - ini) > MAX_MINUTOS_SEMANA) throw limite(usados);
 
   const { error } = await db.from('reservas').insert({
     usuario_id: user.id,
@@ -98,7 +101,7 @@ export const POST = manejar(async (req) => {
     if (error.code === '23P01') {
       throw new ErrorApi(409, 'Alguien acaba de reservar esa hora. Elige otra.', 'OCUPADA');
     }
-    if (/LIMITE_SEMANAL/.test(error.message)) throw limite;
+    if (/LIMITE_SEMANAL/.test(error.message)) throw limite(usados);
     throw error;
   }
   return json({ ok: true }, 201);

@@ -3,7 +3,7 @@
 Web para reservar la pista de pádel de la urbanización. Next.js + Supabase + Vercel.
 
 - Cuentas de vecinos (Supabase Auth), con la contraseña de la urbanización para registrarse.
-- Máximo 2 cuentas por casa y 2 reservas por casa y semana (lunes a domingo).
+- Máximo 3 cuentas por casa y 4 h 30 min de reservas por casa y semana (lunes a domingo).
 - Se puede reservar hasta 14 días vista, de 8:00 a 21:30 de inicio (la reserva se muestra hasta las 22:00). Las reservas solo muestran calle y número, nunca el nombre.
 - App instalable (PWA).
 

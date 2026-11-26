@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { supabase } from '@/lib/supabase';
-import { casaValida } from '@/lib/casas';
+import { MAX_CUENTAS_CASA, casaValida } from '@/lib/casas';
 import { ErrorApi, json, manejar, textoCasa } from '@/lib/servidor';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 const casaLlena = (calle, numero) =>
   new ErrorApi(
     409,
-    `La casa de la ${textoCasa(calle, numero)} ya tiene 2 cuentas registradas, que es el máximo. ` +
+    `La casa de la ${textoCasa(calle, numero)} ya tiene ${MAX_CUENTAS_CASA} cuentas registradas, que es el máximo. ` +
       'Si crees que es un error, habla con los vecinos de esa casa.',
     'CASA_LLENA',
   );
@@ -43,7 +43,7 @@ export const POST = manejar(async (req) => {
   }
   if (!casaValida(calle, numero)) throw new ErrorApi(400, 'Elige una calle y un número de casa válidos.');
 
-  // 3. Máximo 2 cuentas por casa (la base de datos lo vuelve a comprobar)
+  // 3. Máximo de cuentas por casa (la base de datos lo vuelve a comprobar)
   const db = supabase();
   const { count, error: eCuenta } = await db
     .from('perfiles')
@@ -51,7 +51,7 @@ export const POST = manejar(async (req) => {
     .eq('calle', calle)
     .eq('numero', numero);
   if (eCuenta) throw eCuenta;
-  if (count >= 2) throw casaLlena(calle, numero);
+  if (count >= MAX_CUENTAS_CASA) throw casaLlena(calle, numero);
 
   // 4. Crear la cuenta (ya confirmada, sin correo de verificación) y su perfil
   const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true });
