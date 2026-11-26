@@ -237,10 +237,23 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .tarjeta .boton { margin-top: 0; }
 .tarjeta form .boton, form.tarjeta .boton { margin-top: 22px; }
 
+/* Día y horas destacados */
+.horario { margin: 4px 0 18px; }
+.h-fecha { font-size: 18px; font-weight: 600; text-transform: capitalize; color: var(--texto); }
+.h-horas {
+  margin-top: 2px;
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: var(--marino);
+}
+.horario.pequeno { margin: 0; }
+.horario.pequeno .h-horas { font-size: 36px; }
+
 /* Mis reservas */
-.reserva { display: flex; flex-direction: column; gap: 14px; }
-.reserva-dia { font-size: 18px; font-weight: 700; text-transform: capitalize; }
-.reserva-hora { margin-top: 2px; font-size: 15px; color: var(--suave); }
+.reserva { display: flex; flex-direction: column; gap: 16px; }
 .vacio { margin-top: 28px; text-align: center; color: var(--suave); font-size: 16px; }
 
 /* Perfil */
