@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import {
   APERTURA, ULTIMO_INICIO, DURACIONES, MAX_DIAS_ADELANTE, ahoraMadrid, finReserva, hhmm, sumarDias,
 } from '@/lib/fechas';
@@ -92,22 +92,25 @@ export default function TabReservar({ perfil, activa, alReservar }) {
   return (
     <main className="contenido" hidden={!activa}>
       <div className="dias" ref={tira}>
-        {dias.map((f) => {
+        {dias.map((f, i) => {
           const t = trozos(f);
+          const cambioMes = i > 0 && trozos(dias[i - 1]).m !== t.m;
           const sel = f === fecha;
           return (
-            <button
-              key={f}
-              data-sel={sel ? '1' : '0'}
-              className={`dia${sel ? ' sel' : ''}`}
-              onClick={() => setFecha(f)}
-              aria-label={textoFecha(f)}
-              aria-pressed={sel}
-            >
-              <span className="sem">{SEMANA[t.dia]}</span>
-              <span className="num">{t.d}</span>
-              <span className="mes">{MESES[t.m]}</span>
-            </button>
+            <Fragment key={f}>
+              {cambioMes && <span className="separador-mes" aria-hidden="true" />}
+              <button
+                data-sel={sel ? '1' : '0'}
+                className={`dia${sel ? ' sel' : ''}`}
+                onClick={() => setFecha(f)}
+                aria-label={textoFecha(f)}
+                aria-pressed={sel}
+              >
+                <span className="sem">{SEMANA[t.dia]}</span>
+                <span className="num">{t.d}</span>
+                <span className="mes">{MESES[t.m]}</span>
+              </button>
+            </Fragment>
           );
         })}
       </div>
