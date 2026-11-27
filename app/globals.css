@@ -274,6 +274,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .cifra span { display: block; margin-top: 4px; font-size: 12.5px; color: var(--suave); line-height: 1.3; }
 
 /* Reserva confirmada */
+.hoja h2.reservada { color: #c62828; font-weight: 800; font-size: 24px; }
 .hoja h2.confirmada { color: #1b7a3d; font-weight: 800; font-size: 24px; }
 
 /* Un solo contador */

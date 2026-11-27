@@ -152,7 +152,7 @@ export default function TabReservar({ perfil, activa, alReservar }) {
 
       {hoja?.tipo === 'info' && (
         <Hoja cerrar={() => setHoja(null)}>
-          <h2>Hora reservada</h2>
+          <h2 className="reservada">Hora reservada</h2>
           <Horario fecha={fecha} ini={hoja.reserva.ini} fin={hoja.reserva.fin} />
           <p className="quien">Calle {hoja.reserva.calle}, nº {hoja.reserva.numero}</p>
           {hoja.reserva.propia && <p className="resumen">Es de tu casa.</p>}
